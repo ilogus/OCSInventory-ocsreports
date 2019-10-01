@@ -60,6 +60,15 @@ if (isset($protectedPost['table_select'])) {
 	$defaultTable = null;
 }
 
+/**
+ * Ajout d'un système temporaire d'isolation des windows
+ */
+if(empty($_SESSION['edit_tmp_unix'])) {
+    $_SESSION['edit_tmp_unix'] = 'NO_POST';
+} else {
+    $_SESSION['edit_tmp_unix'] = 'AL_POST';
+}
+
 ?>
 <div class="panel panel-default">
 
@@ -198,7 +207,13 @@ if (!empty($_SESSION['OCS']['multi_search'])) {
 							<?php if((strpos($values['fields'], 'fields_') !== false) || ($values['fields'] == "CATEGORY_ID") || ($values['fields'] == 'CATEGORY')){
                 echo $search->getSelectOptionForOperators($values['operator'], $table, $values['fields']);
               } else {
-                echo $search->getSelectOptionForOperators($values['operator'], $table);
+                // DIFFERENT
+                if($values['fields'] === "USERAGENT" && $protectedGet['values2'] === "unix" && $_SESSION['edit_tmp_unix'] === "NO_POST"){
+                    echo $search->getSelectOptionForOperators('DIFFERENT', $table);
+                } else {
+                    // Ligne pas touche
+                    echo $search->getSelectOptionForOperators($values['operator'], $table);
+                }
               } ?>
 						</select>
 					</div>
@@ -208,7 +223,17 @@ if (!empty($_SESSION['OCS']['multi_search'])) {
 						<?php if((strpos($values['fields'], 'fields_') !== false) || ($values['fields'] == "CATEGORY_ID") || ($values['fields'] == 'CATEGORY')){
               echo $search->returnFieldHtml($uniqid, $values, $table, $values['fields']);
             }else {
-              echo $search->returnFieldHtml($uniqid, $values, $table );
+              $nvalues = [
+                    'fields' => 'USERAGENT',
+                    'value' => 'WINDOWS',
+                    'operator' => 'DIFFERENT'
+              ];
+              if($values['fields'] === "USERAGENT" && $protectedGet['values2'] === "unix" && $_SESSION['edit_tmp_unix'] === "NO_POST"){
+                  echo $search->returnFieldHtml($uniqid, $nvalues, $table);
+              } else {
+                  // Ligne pas touche
+                  echo $search->returnFieldHtml($uniqid, $values, $table);
+              }
             } ?>
 					</div>
 				</div>
